@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:23.04
 
 # Set non-interactive mode for apt-get
 ENV DEBIAN_FRONTEND=noninteractive
@@ -6,9 +6,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install dependencies
 RUN apt-get update && \
     apt-get install -y \
-        python3.9 \
+        python3.10 \
         python3-pip \
-        postgresql-12 \
+        python3-venv \
+        postgresql-15 \
         mysql-server-8.0 \
         libpq-dev \
         sudo && \
@@ -26,18 +27,24 @@ WORKDIR /home/dbbert
 
 # Copy DB-BERT source code and data files
 COPY --chown=dbbert:dbbert . .
-COPY --chown=dbbert:dbbert tpchdata /home/dbbert/scripts/tpchdata
-COPY --chown=dbbert:dbbert jobdata /home/dbbert/scripts/jobdata
+
+# Ensure these directories exist in the same context as the Dockerfile
+COPY --chown=dbbert:dbbert scripts/tpchdata /home/dbbert/scripts/tpchdata
+COPY --chown=dbbert:dbbert scripts/jobdata /home/dbbert/scripts/jobdata
 
 # Make scripts executable
 RUN chmod +x /home/dbbert/scripts/installtpch.sh /home/dbbert/scripts/installjob.sh
 
-# Install Python dependencies
-RUN pip3 install --user -r requirements.txt
-RUN pip3 install --user protobuf==3.20.*
+# Create a virtual environment
+RUN python3 -m venv venv
+
+# Install Python dependencies in the virtual environment
+RUN /home/dbbert/venv/bin/pip install --upgrade pip && \
+    /home/dbbert/venv/bin/pip install -r requirements.txt && \
+    /home/dbbert/venv/bin/pip install protobuf==3.20.*
 
 # Add local bin to PATH
-ENV PATH="/home/dbbert/.local/bin:${PATH}"
+ENV PATH="/home/dbbert/venv/bin:${PATH}"
 ENV PYTHONPATH="${PYTHONPATH}:/home/dbbert/src"
 
 # Temporarily switch to root to set up databases

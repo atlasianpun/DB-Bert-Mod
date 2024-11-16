@@ -1,29 +1,32 @@
-echo "Downloading benchmark files for TPC-H benchmark ..."
-pip install gdown==4.7.1
-echo "Downloading benchmark data ..."
-gdown "https://drive.google.com/uc?id=1BjHTNXwGoZIkadECex3PzMdYuSJ1NCOp" -O /tmp/tpchdata.tar.gz
-cd /tmp
-echo "Decompressing data ..."
-tar xvf tpchdata.tar.gz
-cd tpchdata
+echo "Using local data files for TPC-H benchmark ..."
+
+# Navigate to the folder where the TPC-H data files are stored (assuming /home/dbbert/dbbert/data/tpchdata/)
+cd /home/dbbert/scripts/tpchdata
 
 echo "Installing TPC-H on PostgreSQL ..."
 sudo -u dbbert createdb tpch
-echo "Creating database ..."
+
+echo "Creating database schema in PostgreSQL ..."
 sudo -u dbbert psql -f schema.sql tpch
-echo "Loading data ..."
+
+echo "Loading data into PostgreSQL ..."
 sudo -u dbbert psql -f loadpg.sql tpch
-echo "Indexing data ..."
+
+echo "Indexing data in PostgreSQL ..."
 sudo -u dbbert psql -f index.sql tpch
 
 echo "Installing TPC-H on MySQL ..."
-echo "Copying data ..."
+echo "Copying data files to MySQL data directory ..."
 cp *.tsv /var/lib/mysql-files
-echo "Creating database ..."
-mysql -u dbbert -pdbbert -e "create database tpch"
-echo "Creating schema ..."
+
+echo "Creating database schema in MySQL ..."
+mysql -u dbbert -pdbbert -e "create database tpch;"
+
+echo "Applying schema in MySQL ..."
 mysql -u dbbert -pdbbert tpch < schema.sql
-echo "Loading data ..."
+
+echo "Loading data into MySQL ..."
 mysql -u dbbert -pdbbert tpch < loadms.sql
-echo "Indexing data ..."
+
+echo "Indexing data in MySQL ..."
 mysql -u dbbert -pdbbert tpch < index.sql

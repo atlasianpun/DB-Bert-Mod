@@ -1,30 +1,32 @@
-echo "Downloading data files for JOB benchmark ..."
-echo "Installing gdown ..."
-pip install gdown==4.7.1
-echo "Downloading benchmark data ..."
-gdown "https://drive.google.com/uc?id=1-dT0jCGFLwB1VH_76lLn6V-f4E39Eoiy" -O /tmp/jobdata.tar.gz
-cd /tmp
-echo "Decompressing benchmark data ..."
-tar xvf jobdata.tar.gz
-cd jobdata
+echo "Using local data files for JOB benchmark ..."
+
+# Navigate to the folder where the data files are stored (assuming /home/dbbert/dbbert/data/jobdata/)
+cd /home/dbbert/scripts/jobdata
 
 echo "Creating JOB database in PostgreSQL ..."
 sudo -u dbbert createdb job
-echo "Creating database ..."
+
+echo "Creating database schema in PostgreSQL ..."
 sudo -u dbbert psql -f schema.sql job
-echo "Loading data ..."
+
+echo "Loading data into PostgreSQL ..."
 sudo -u dbbert psql -f loadpg.sql job
-echo "Indexing data ..."
+
+echo "Indexing data in PostgreSQL ..."
 sudo -u dbbert psql -f fkindexes.sql job
 
 echo "Creating JOB database in MySQL ..."
-echo "Copying data ..."
+echo "Copying data files to MySQL data directory ..."
 cp *.tsv /var/lib/mysql-files
-echo "Creating database ..."
+
+echo "Creating database schema in MySQL ..."
 mysql -u dbbert -pdbbert -e "create database job;"
-echo "Creating schema ..."
+
+echo "Applying schema in MySQL ..."
 mysql -u dbbert -pdbbert -D job < schema.sql
-echo "Loading data ..."
+
+echo "Loading data into MySQL ..."
 mysql -u dbbert -pdbbert -D job < loadms.sql
-echo "Indexing data ..."
+
+echo "Indexing data in MySQL ..."
 mysql -u dbbert -pdbbert -D job < fkindexes.sql
