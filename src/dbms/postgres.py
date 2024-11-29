@@ -91,6 +91,8 @@ class PgConfig(ConfigurableDBMS):
 
     def all_params(self):
         """ Return names of all tuning parameters. """
+        if self.connection is None:
+            raise Exception("Database connection is not established.")
         cursor = self.connection.cursor()
         cursor.execute("select name from pg_settings " \
                        "where vartype in ('bool', 'integer', 'real')")
