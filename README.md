@@ -36,13 +36,33 @@ git clone https://github.com/itrummer/dbbert
 
 4. Install dependencies:
 
-```
-sudo apt install libpq-dev=12.16-0ubuntu0.20.04.1
-cd dbbert
-sudo pip install -r requirements.txt
-```
+3. **Interactive Shell (Optional)**
+- To access an interactive shell inside the container for custom experiments, use:
+     ```bash
+     docker run -it --rm --entrypoint /bin/bash dbbert:latest
+     ```
+4. **Start Postgres and MySQL server (if not started automatically)**
 
-5. Install benchmark databases using scripts in `scripts` folder (installing all databases may take one to two hours):
+- After running the container, access it using the following command:
+     ```bash
+     docker exec -it <container_name> /bin/bash
+     ```
+     Replace `<container_name>` with the actual name of the container (e.g., `nice_noyce`).
+
+- Inside the container, modify the `max_wal_size` parameter in the PostgreSQL configuration file:
+     ```bash
+     Modify max_wal_size from '1GB' to '2GB' in /etc/postgresql/15/main/postgresql.conf
+     ```
+
+- Start the necessary services:
+     ```bash
+     sudo service postgresql start
+     sudo service mysql start
+     ```
+
+- Ensure the services are running properly after starting them.
+    
+### Running Experiments
 
 ```
 sudo scripts/installtpch.sh
